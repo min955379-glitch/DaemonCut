@@ -69,6 +69,7 @@ source_media/browser_cache/
 *.flv
 *.mxf
 *.ts
+!frontend/**/*.ts
 *.3gp
 *.ogv
 *.jpg
