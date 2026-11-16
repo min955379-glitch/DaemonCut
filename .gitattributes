@@ -1,0 +1,7 @@
+# Keep Windows launchers native on checkout while source/config stays portable.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf

@@ -1,0 +1,125 @@
+# DaemonCut source-control policy: GitHub is for code and lightweight config.
+# All media, model weights, caches, renders and voice recordings belong in the
+# configured Google Drive folder (DaemonCut / DaemonCut Development).
+
+# Secrets and local machine configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python environments, bytecode, test/lint caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+
+# DaemonCut local runtime metadata and ephemeral files
+.daemoncut/
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+
+# Drive-mapped heavy data locations (may be Windows junctions)
+models/
+assets/
+voice_vault/
+renders_archive/
+source_media/
+source_media/vods/
+source_media/phone_uploads/
+source_media/browser_cache/
+
+# Model weights / checkpoints / executable model bundles
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.gguf
+*.onnx
+*.tflite
+*.engine
+*.model
+*.weights
+*.bin
+*.ggml
+*.h5
+*.pb
+
+# Source footage, generated media, audio, subtitles and large assets
+*.mp4
+*.m4v
+*.mov
+*.mkv
+*.avi
+*.webm
+*.wmv
+*.flv
+*.mxf
+*.ts
+*.3gp
+*.ogv
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.heic
+*.avif
+*.tif
+*.tiff
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.aiff
+*.cube
+*.lut
+*.license.json
+*.ttf
+*.otf
+*.woff
+*.woff2
+*.psd
+*.exr
+*.blend
+
+# Next.js console build output and installed packages
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/.turbo/
+frontend/*.tsbuildinfo
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Temporary editor/proxy/export files
+proxies/
+previews/
+exports/
+temp/
+tmp/
+*.part
+*.partial
+*.tmp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
