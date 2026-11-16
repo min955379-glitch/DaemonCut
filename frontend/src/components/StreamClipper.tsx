@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Film, LoaderCircle, Scissors, Sparkles, WandSparkles } from "lucide-react";
 import { apiPost } from "@/lib/api";
+import { useFileDrop } from "@/lib/useFileDrop";
 
 type Props = { workspaceId: string; onToast: (message: string, tone?: "brass" | "alert") => void };
 type Highlight = { start_seconds: number; end_seconds: number; duration_seconds?: number; transcript: string; audio_score: number; hook_score: number; viral_score: number; explanation?: string };
@@ -38,6 +39,19 @@ export default function StreamClipper({ workspaceId, onToast }: Props) {
   const [mediaPath, setMediaPath] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  const fileDrop = useFileDrop({
+    onDrop: (path, suggestedTitle) => {
+      setVideoPath(path);
+      setInputMode("path");
+      setTitle((current) => current.trim() || suggestedTitle);
+      setMediaPath("");
+      setHighlights([]);
+      setSelected([]);
+      setRenders([]);
+    },
+    onToast: (message, kind) => onToast(message, kind === "alert" ? "alert" : "brass"),
+  });
 
   async function analyze(renderSelected: boolean) {
     const storedSource = renderSelected ? mediaPath.trim() : "";
@@ -95,7 +109,12 @@ export default function StreamClipper({ workspaceId, onToast }: Props) {
         <div className="panel-body grid gap-3 md:grid-cols-2">
           <div className="md:col-span-2 flex flex-wrap gap-2" role="group" aria-label="Source type"><button className={`btn ${inputMode === "url" ? "btn-primary" : ""}`} type="button" onClick={() => setInputMode("url")}>Public VOD URL</button><button className={`btn ${inputMode === "path" ? "btn-primary" : ""}`} type="button" onClick={() => setInputMode("path")}>Local / Drive path</button></div>
           {inputMode === "url" ? <label className="field-label md:col-span-2">YouTube / Twitch / Kick source URL<input className="field" type="url" value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" maxLength={2048} /></label> : <>
-            <label className="field-label md:col-span-2">Local clip path, preferably under the DaemonCut Development Drive root<input className="field font-mono" value={videoPath} onChange={(event) => setVideoPath(event.target.value)} placeholder="G:\\My Drive\\DaemonCut Development\\source_media\\session.mp4" /></label>
+            <div className={`md:col-span-2 rounded-lg border p-3 transition-colors ${fileDrop.isDragging ? "border-brass bg-brass/5" : "border-parchment/15"}`} {...fileDrop.dragHandlers}>
+              <label className="field-label flex items-center justify-between gap-2">Local clip path, preferably under the DaemonCut Development Drive root
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-brass">drag &amp; drop a file</span>
+              </label>
+              <input className="field font-mono" value={videoPath} onChange={(event) => setVideoPath(event.target.value)} placeholder="G:\\My Drive\\DaemonCut Development\\source_media\\session.mp4" />
+            </div>
             <label className="field-label">Clip title<input className="field" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={200} /></label>
           </>}
           <label className="field-label">Capture start seconds<input className="field" type="number" min="0" value={startSeconds} onChange={(event) => setStartSeconds(event.target.value)} /></label>

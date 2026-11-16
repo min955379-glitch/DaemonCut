@@ -234,9 +234,9 @@ class HighlightSelectionRequest(BaseModel):
     start_seconds: float = Field(ge=0)
     end_seconds: float = Field(gt=0)
     transcript: str = Field(default="", max_length=20_000)
-    audio_score: float = Field(default=0.0, ge=0.0, le=1.0)
-    hook_score: float = Field(default=0.0, ge=0.0, le=1.0)
-    viral_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    audio_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    hook_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    viral_score: float = Field(default=0.0, ge=0.0, le=100.0)
     explanation: str = Field(default="", max_length=1_000)
 
 
