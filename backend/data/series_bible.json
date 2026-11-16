@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "project": "DaemonCut",
+  "description": "Persistent creative continuity data for DaemonCut story generation. Edit this file to make series-specific canon changes; generated prompts should treat these values as the source of truth.",
+  "series": {
+    "breezy_and_mal": {
+      "display_name": "Breezy & Mal",
+      "format": "Original episodic 3D cartoon stories for short-form video",
+      "default_language": "English",
+      "audience": "Family-friendly general audience",
+      "logline": "Two inventive friends turn ordinary neighborhood problems into playful, surprisingly clever adventures, learning to listen and work together along the way.",
+      "characters": [
+        {
+          "name": "Breezy",
+          "role": "The energetic idea-starter",
+          "canonical_appearance": "An original stylized 3D cartoon teen with warm medium-brown skin, a softly oval face, large hazel-brown eyes, expressive brows, and short springy dark curls with a small curl falling over the forehead. Breezy always wears a deep navy bomber jacket with a narrow muted-brass zipper and a small crescent patch on the right sleeve, an ivory crew-neck shirt, slate-blue joggers, and clean off-white high-top sneakers. Keep the same face shape, hair silhouette, skin tone, outfit colors, patch placement, and apparent age in every shot.",
+          "personality": ["curious", "optimistic", "quick to act", "good at improvising"],
+          "voice_and_dialogue": "Bright, concise, warm, and playful; never mean-spirited.",
+          "voice_profile_id": "energetic_teen"
+        },
+        {
+          "name": "Mal",
+          "role": "The calm observer and practical builder",
+          "canonical_appearance": "An original stylized 3D cartoon teen with deep umber skin, a softly square face, large dark-brown eyes, a small dimple on the left cheek, and short, neat twist curls. Mal always wears a rust-orange hoodie with a simple cream drawstring, charcoal trousers, cream low-top sneakers, and a slim dark wristwatch on the left wrist. Keep the same face shape, hair silhouette, skin tone, outfit colors, left-wrist watch, and apparent age in every shot.",
+          "personality": ["thoughtful", "patient", "observant", "quietly funny"],
+          "voice_and_dialogue": "Measured, clear, gently humorous, and supportive.",
+          "voice_profile_id": "calm_builder"
+        }
+      ],
+      "world": {
+        "primary_location": "A welcoming neighborhood maker courtyard with a small workshop, a painted brick wall, a sturdy workbench, potted plants, and a view of modest homes in the distance.",
+        "recurring_props": ["a blue canvas tool bag", "a small brass compass", "recycled cardboard inventions", "a red kick scooter"],
+        "lighting_and_color": "Soft late-afternoon key light, warm practical highlights, natural shadows, and a restrained palette of navy, rust, slate, ivory, and muted brass.",
+        "camera_language": "Readable medium shots for dialogue, purposeful close-ups for clues and hand-built objects, and gentle dolly or pan movement. Avoid disorienting camera motion."
+      },
+      "visual_continuity_rules": [
+        "Breezy and Mal must retain their canonical face, hair, skin tone, clothing, and signature details in every scene.",
+        "Do not exchange character outfits, props, handedness, or signature colors between characters.",
+        "Use original designs; do not add third-party logos, copyrighted character lookalikes, or unrequested text on clothing or props.",
+        "Keep the maker courtyard spatially consistent unless an episode explicitly moves to a new location.",
+        "Keep stories playful and kind; resolve conflicts with communication, curiosity, or creative problem-solving rather than humiliation or cruelty."
+      ],
+      "reference_prompt_slots": {
+        "E1": "Full-body character reference for Breezy. Use the complete canonical appearance above, neutral relaxed pose, readable front three-quarter view, clean uncluttered background, consistent soft studio lighting, and no extra characters.",
+        "E2": "Full-body character reference for Mal. Use the complete canonical appearance above, neutral relaxed pose, readable front three-quarter view, clean uncluttered background, consistent soft studio lighting, and no extra characters.",
+        "E3": "Environment reference for the neighborhood maker courtyard and workshop. Preserve the workbench, painted brick wall, potted plants, modest homes, blue canvas tool bag, and warm late-afternoon lighting.",
+        "E3B": "Two-character continuity reference for Breezy and Mal together in the maker courtyard. Preserve both canonical appearances and their relative height, clothing, signature details, friendly expressions, and the established color palette."
+      },
+      "episode_structure": {
+        "recommended_beats": ["immediate visual hook", "a simple problem or mystery", "two distinct character perspectives", "a small experiment or setback", "a cooperative solution", "a warm closing beat"],
+        "recommended_scene_count": 5,
+        "recommended_duration_seconds": 45,
+        "ending_rule": "End with a satisfying character moment or gentle joke; avoid forced cliffhangers."
+      }
+    }
+  },
+  "voice_profiles": {
+    "energetic_teen": {
+      "description": "Bright, lively delivery with clear articulation and moderate pace.",
+      "kokoro_voice": "af_heart",
+      "kokoro_language_code": "a",
+      "edge_voice": "en-US-AvaMultilingualNeural",
+      "rate": "+8%",
+      "pitch": "+2Hz",
+      "volume": "+0%"
+    },
+    "calm_builder": {
+      "description": "Grounded, measured delivery with a gentle lower pitch.",
+      "kokoro_voice": "am_michael",
+      "kokoro_language_code": "a",
+      "edge_voice": "en-US-GuyNeural",
+      "rate": "-4%",
+      "pitch": "-2Hz",
+      "volume": "+0%"
+    },
+    "narrator": {
+      "description": "Warm, centered narration with even pace and crisp consonants.",
+      "kokoro_voice": "af_bella",
+      "kokoro_language_code": "a",
+      "edge_voice": "en-US-AriaNeural",
+      "rate": "+0%",
+      "pitch": "+0Hz",
+      "volume": "+0%"
+    },
+    "soft_young_boy": {
+      "description": "Soft, gentle, youthful delivery; do not imitate a real child or identifiable person.",
+      "kokoro_voice": "am_adam",
+      "kokoro_language_code": "a",
+      "edge_voice": "en-US-ChristopherNeural",
+      "rate": "-6%",
+      "pitch": "+3Hz",
+      "volume": "-2%"
+    }
+  },
+  "templates": {
+    "3d_roblox_story": {
+      "display_name": "3D Roblox Story",
+      "format": "Short episodic story in an original, block-based game-world aesthetic",
+      "visual_style": "Bright, readable, toy-like 3D forms; clean block geometry; expressive original avatars; consistent scale and camera framing; clear silhouettes; simple, intentional materials and lighting.",
+      "originality_and_safety": "Use original characters, environments, and props. Do not reproduce official Roblox branding, logos, catalog items, or existing creators' characters unless the user has rights and explicitly supplies them. Keep stories suitable for the selected audience.",
+      "continuity_fields": ["avatar_designs", "outfit_colors", "world_layout", "prop_inventory", "camera_rules", "episode_tone"],
+      "recommended_episode_beats": ["fast visual hook", "goal or challenge", "attempt one", "complication", "team solution", "button or payoff"]
+    },
+    "custom_universal_niche": {
+      "display_name": "Custom Universal Niche",
+      "required_fields": ["niche", "target_audience", "channel_promise", "tone", "visual_style", "content_boundaries", "preferred_languages"],
+      "optional_fields": ["series_name", "characters", "world", "reference_images", "recurring_segments", "platforms", "monetization_constraints"],
+      "generation_rule": "Treat user-provided canon and content boundaries as authoritative. If a required field is missing, request it or mark the strategy as incomplete; never invent factual credentials or claim that a topic is currently trending without a source."
+    }
+  },
+  "caption_modes": {
+    "english": {
+      "script": "English",
+      "writing_system": "Latin",
+      "instruction": "Write natural, concise English captions while preserving the meaning and emotional tone."
+    },
+    "roman_urdu": {
+      "script": "Urdu language written in Latin characters",
+      "writing_system": "Latin only",
+      "instruction": "Use natural conversational Roman Urdu. Do not use Urdu/Arabic script or Devanagari. Keep familiar names and meaning intact; avoid forced word-for-word transliteration when a natural Roman Urdu phrase is clearer."
+    },
+    "roman_hindi": {
+      "script": "Hindi language written in Latin characters",
+      "writing_system": "Latin only",
+      "instruction": "Use natural conversational Roman Hindi. Do not use Devanagari or Urdu/Arabic script. Keep familiar names and meaning intact; avoid forced word-for-word transliteration when a natural Roman Hindi phrase is clearer."
+    }
+  },
+  "global_generation_rules": [
+    "Use the chosen series bible and workspace settings as the continuity source of truth.",
+    "Reference-image prompts (E1, E2, E3, E3B) may be as long as needed for visual consistency; do not apply the YouTube Create scene-prompt limit to them.",
+    "Every YouTube Create video scene prompt must be validated at no more than 880 Python characters before it is returned.",
+    "Do not claim that generated content guarantees views, virality, revenue, or platform approval."
+  ]
+}

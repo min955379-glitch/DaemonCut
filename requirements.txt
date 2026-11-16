@@ -1,0 +1,26 @@
+# DaemonCut Phase 1–3 lightweight runtime dependencies.
+# Model weights, source media, phone uploads, and rendered masters live in
+# Google Drive; no model download or browser binary is installed by setup.bat.
+google-genai>=1.0.0,<2.0.0
+tzdata>=2024.1
+Pillow>=10.0.0
+edge-tts>=6.1.0,<8.0.0
+fastapi>=0.110.0,<1.0.0
+uvicorn>=0.27.0,<1.0.0
+python-multipart>=0.0.9,<1.0.0
+yt-dlp>=2024.4.9
+qrcode>=7.4,<9.0
+cryptography>=42.0,<46.0
+
+# Lightweight API integration-test client.
+httpx>=0.27.0,<1.0.0
+
+# Optional heavyweight/platform-specific backends are intentionally not
+# installed by setup.bat. Install only the backend you choose; model/cache
+# directories must remain under GDRIVE_DAEMONCUT_PATH/models:
+# playwright              (Python package + separately installed browser binary)
+# kokoro                  (Kokoro-82M; CPU-capable, usually requires PyTorch)
+# pocket-tts              (local cloned-voice CLI/API integrations)
+# chatterbox-tts          (optional local voice-cloning runtime)
+# faster-whisper           (CPU word-level timestamp fallback)
+# opencv-python-headless  (optional thumbnail sharpness acceleration)
