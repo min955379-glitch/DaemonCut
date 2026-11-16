@@ -235,6 +235,51 @@ class MainAPITests(unittest.TestCase):
         self.assertEqual(len(response.json()["renders"]), 1)
         self.assertEqual(render.call_args.args[1], candidates[1])
 
+    def test_clipper_render_accepts_engine_score_scale(self) -> None:
+        # The engine emits scores on a 0-100 scale; the frontend passes them
+        # straight back on render. The request model must accept that scale.
+        media_path = self.drive / "source_media" / "sample.mp4"
+        candidates = [
+            HighlightSegment(0, 20, "first", 59.26, 36.74, 34.04),
+            HighlightSegment(20, 40, "second", 55.96, 34.70, 30.1),
+            HighlightSegment(40, 60, "third", 54.91, 34.04, 29.5),
+        ]
+        with patch.object(self.services.clipper, "ingest_local_file", return_value=SimpleNamespace(path=media_path, duration_seconds=60.0)):
+            with patch.object(self.services.clipper, "find_highlights", return_value=candidates):
+                with patch.object(self.services.clipper, "render_vertical_short", return_value={"rendered": True}) as render:
+                    response = self.client.post("/api/clipper/highlights", json={
+                        "video_path": str(media_path),
+                        "render": True,
+                        "selected_highlights": [
+                            {
+                                "start_seconds": 0,
+                                "end_seconds": 20,
+                                "audio_score": 59.26,
+                                "hook_score": 36.74,
+                                "viral_score": 34.04,
+                            },
+                            {
+                                "start_seconds": 20,
+                                "end_seconds": 40,
+                                "audio_score": 55.96,
+                                "hook_score": 34.70,
+                                "viral_score": 30.1,
+                            },
+                            {
+                                "start_seconds": 40,
+                                "end_seconds": 60,
+                                "audio_score": 54.91,
+                                "hook_score": 34.04,
+                                "viral_score": 29.5,
+                            },
+                        ],
+                        "framing_mode": "full_screen",
+                        "language_mode": "english",
+                    })
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(len(response.json()["renders"]), 3)
+        self.assertEqual(render.call_count, 3)
+
     def test_publish_status_and_oauth_authorization_keep_platforms_independent(self) -> None:
         with patch.object(config, "YOUTUBE_OAUTH_CLIENT_ID", "youtube-client"), patch.object(config, "YOUTUBE_OAUTH_CLIENT_SECRET", "youtube-secret"):
             youtube = self.client.get("/api/oauth/youtube/authorize")

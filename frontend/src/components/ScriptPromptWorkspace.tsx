@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Clipboard, Clapperboard, LoaderCircle, RefreshCw, Smartphone, Sparkles, WandSparkles } from "lucide-react";
 import { apiGet, apiPost, MAX_YT_CREATE_CHARS, type PromptScene, type ScriptDraft } from "@/lib/api";
+import { useFileDrop } from "@/lib/useFileDrop";
 
 const REFERENCE_KEYS = ["E1", "E2", "E3", "E3B"] as const;
 type Toast = (message: string, tone?: "brass" | "alert") => void;
@@ -63,6 +64,11 @@ export default function ScriptPromptWorkspace({ workspaceId, initialNiche, initi
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState("");
   const [result, setResult] = useState("");
+
+  const fileDrop = useFileDrop({
+    onDrop: (path) => setVideoPath(path),
+    onToast: (message, kind) => onToast(message, kind === "alert" ? "alert" : "brass"),
+  });
 
   useEffect(() => {
     let alive = true;
@@ -237,9 +243,12 @@ export default function ScriptPromptWorkspace({ workspaceId, initialNiche, initi
             {!promptsValid && <p className="text-sm text-crimson">A scene prompt exceeds the {MAX_YT_CREATE_CHARS}-character limit.</p>}
             <div className="separator" />
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="field-label">Rendered scene clip path in Drive
+              <div className={`rounded-lg border p-3 transition-colors ${fileDrop.isDragging ? "border-brass bg-brass/5" : "border-parchment/15"}`} {...fileDrop.dragHandlers}>
+                <label className="field-label flex items-center justify-between gap-2">Rendered scene clip path in Drive
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-brass">drag &amp; drop a file</span>
+                </label>
                 <input className="field font-mono" value={videoPath} onChange={(event) => setVideoPath(event.target.value)} placeholder="G:\\My Drive\\DaemonCut Development\\source_media\\scene.mp4" />
-              </label>
+              </div>
               <label className="field-label">Optional publish time / local workstation time
                 <input className="field" type="datetime-local" value={scheduledFor} onChange={(event) => setScheduledFor(event.target.value)} />
               </label>

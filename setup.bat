@@ -16,7 +16,7 @@ echo.
 
 where py >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: The Python Launcher (py.exe) was not found. Install Python 3.11+ from python.org and retry.
+    echo ERROR: The Python Launcher ^(py.exe^) was not found. Install Python 3.11+ from python.org and retry.
     goto :failed
 )
 py -3 -c "import sys; raise SystemExit(0 if sys.version_info >= (3,11) else 1)" >nul 2>&1
