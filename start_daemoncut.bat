@@ -47,7 +47,7 @@ if not exist "%ROOT%\backend\main.py" (
 
 start "DaemonCut API - 127.0.0.1:8000" /D "%ROOT%" cmd /k ""%PYTHON%" -m backend.main"
 timeout /t 2 /nobreak >nul
-start "DaemonCut Console - 127.0.0.1:3000" /D "%ROOT%\frontend" cmd /k "npm run dev -- --hostname 0.0.0.0"
+start "DaemonCut Console - 127.0.0.1:3000" /D "%ROOT%\frontend" cmd /k "npm run dev"
 echo.
 echo DaemonCut is starting in two windows.
 echo Creator console: http://127.0.0.1:3000
