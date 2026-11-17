@@ -31,7 +31,7 @@ from starlette.concurrency import run_in_threadpool
 
 from backend import config
 from backend.audio_engine import AudioEngine
-from backend.brain_gemini import Brain
+from backend.brain_gemini import Brain, BrainError, AIProviderUnavailable, AIResponseError
 from backend.browser_cloner import BrowserCloner
 from backend.clipper_engine import ClipperEngine, HighlightSegment, ClipperError, ClipperDependencyUnavailable, ClipperValidationError
 from backend.database import ConflictError, DatabaseManager, NotFoundError
@@ -759,6 +759,21 @@ def create_app(services: ServiceContainer | None = None, *, start_scheduler: boo
     @app.exception_handler(ClipperError)
     async def clipper_error_handler(_request: Request, exc: ClipperError) -> Response:
         return Response(json.dumps({"detail": {"status": "error", "message": str(exc)[:500], "color": config.UI_PALETTE["crimson"]}}), status_code=500, media_type="application/json")
+
+    @app.exception_handler(AIProviderUnavailable)
+    async def ai_provider_handler(_request: Request, exc: AIProviderUnavailable) -> Response:
+        LOGGER.warning("AI provider unavailable: %s", str(exc)[:300])
+        return Response(json.dumps({"detail": {"status": "error", "message": f"AI provider unavailable: {str(exc)[:300]}. Set GEMINI_API_KEY or run Ollama locally, then retry.", "color": config.UI_PALETTE["crimson"]}}), status_code=503, media_type="application/json")
+
+    @app.exception_handler(AIResponseError)
+    async def ai_response_handler(_request: Request, exc: AIResponseError) -> Response:
+        LOGGER.warning("AI response error: %s", str(exc)[:300])
+        return Response(json.dumps({"detail": {"status": "error", "message": f"AI returned an invalid response: {str(exc)[:300]}. The provider may be rate-limited; try again later or switch providers.", "color": config.UI_PALETTE["crimson"]}}), status_code=502, media_type="application/json")
+
+    @app.exception_handler(BrainError)
+    async def brain_error_handler(_request: Request, exc: BrainError) -> Response:
+        LOGGER.warning("Brain error: %s", str(exc)[:300])
+        return Response(json.dumps({"detail": {"status": "error", "message": f"AI generation failed: {str(exc)[:300]}", "color": config.UI_PALETTE["crimson"]}}), status_code=503, media_type="application/json")
 
     @app.exception_handler(ValueError)
     async def value_error_handler(_request: Request, exc: ValueError) -> Response:
