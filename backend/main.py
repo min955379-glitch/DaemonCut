@@ -33,7 +33,7 @@ from backend import config
 from backend.audio_engine import AudioEngine
 from backend.brain_gemini import Brain
 from backend.browser_cloner import BrowserCloner
-from backend.clipper_engine import ClipperEngine, HighlightSegment
+from backend.clipper_engine import ClipperEngine, HighlightSegment, ClipperError, ClipperDependencyUnavailable, ClipperValidationError
 from backend.database import ConflictError, DatabaseManager, NotFoundError
 from backend.director_chat import DirectorChat, DirectorChatError
 from backend.scheduler_daemon import SchedulerDaemon
@@ -747,6 +747,18 @@ def create_app(services: ServiceContainer | None = None, *, start_scheduler: boo
     @app.exception_handler(SocialPublisherError)
     async def publisher_error_handler(_request: Request, exc: SocialPublisherError) -> Response:
         return Response(json.dumps({"detail": {"status": "error", "message": str(exc)[:500], "color": config.UI_PALETTE["crimson"]}}), status_code=503, media_type="application/json")
+
+    @app.exception_handler(ClipperValidationError)
+    async def clipper_validation_handler(_request: Request, exc: ClipperValidationError) -> Response:
+        return Response(json.dumps({"detail": {"status": "error", "message": str(exc)[:500], "color": config.UI_PALETTE["crimson"]}}), status_code=422, media_type="application/json")
+
+    @app.exception_handler(ClipperDependencyUnavailable)
+    async def clipper_dependency_handler(_request: Request, exc: ClipperDependencyUnavailable) -> Response:
+        return Response(json.dumps({"detail": {"status": "error", "message": str(exc)[:500], "color": config.UI_PALETTE["crimson"]}}), status_code=503, media_type="application/json")
+
+    @app.exception_handler(ClipperError)
+    async def clipper_error_handler(_request: Request, exc: ClipperError) -> Response:
+        return Response(json.dumps({"detail": {"status": "error", "message": str(exc)[:500], "color": config.UI_PALETTE["crimson"]}}), status_code=500, media_type="application/json")
 
     @app.exception_handler(ValueError)
     async def value_error_handler(_request: Request, exc: ValueError) -> Response:
