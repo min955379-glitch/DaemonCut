@@ -34,7 +34,8 @@ $ShortcutIcon = $null
 $IconB64 = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAFLUlEQVR42u3dwY1TQRBF0YoBpEmCeFiRDumQDiGwZUMA7FiM0DDY3V1VXUe6AXy538Fm7G/Hh48v0tjCQyAAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQASvT922c9FgAmrpt5hNFrMoYwek3GEKavyQzC7jVZQpi+JjMI09dkBmH9mmwgTF+TGYT1a7KBMH1NZhDWr8kGwvo12UCYviYzCOvXZANh/ZpsIKxfkw2E9WuygbB+TTYAgACwfi3t05evXQyE9WvJ4t+urIGwfm2d/hIGAKj39J9k0BKAiVh/fQNh/Tq8/lIGAFDC+h8z0AaAlVh/FwNh/WoEYLkBAJS2/gpPAmH96gVgrYFxAPwkxGOHuGn96U8Ccff6rXnVyZYCsPBk7wRgsssDoAcASwUgB4D1A3ASwKrjvgeAjTZdf+6TQFywfgOd+Qyw5OjbAzBNAAAQACMB2CUA+QCsH4AsAM/PoCsAi7zGQO4SABAA3QDY4jUG0scQ/vlXawBP7gEApRmosIfw+kcpBopMAgAlGKgzCQB02kCpSQCgcwwKTgIAnWBQdhIAaMsNxF0m0QyAeTX9UgkAAADgOgBe/6j7e6MACAAA6vXr5w8AABgNoKkBAABYBqAjAwAAWAygFwMAANgCoAsDAADYCKA+AwAA2A6gMgMAADgEoCYDAAA4CqAaAwAASABQhwEAAKQBqMAAAACSAeQyAACAEgCyGAAAQCEA5xkAAEA5ACcZAABAUQBnGAAAQGkAuw0AAEB1AFsZAABADwCbGAAAQCcAyxkAAEA/AAsZAABAVwBLGAAAQG8ATzIAAIAbADzMAAAA7gHwAAMAALgNwH8xAACAOwG8kwEAANwM4J8MAADgfgBvMAAAgCkA/soAAABmAXjFAAAAJgL4wwAAADwDAACA/wMAAIC/AgEAgPcBAADAO8EAAOCzQAAA4NOgAADgfgAAAHBHGAAAuCcYAAB8KwQAAPheIAAA8M1wAADgu0EBAMC3QwMAgN8HAAAAvxADAAB+IwwAAPxKJAAA+J1gAADwS/EAAFBr+gAAkAagzpUDAMBRANWuHAAADgGoeeUAALAdQOUrBwCAjQDqXzkAAGwB0OXKAQBgMYBeVw4AAMsAdLxyAABYA6DplQMAwOgAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAACAAesHAAAAAAAAAAAYsH4AAAAAAAasHwAGrB8ABqwfAAAAAIAB6wcAA9MHgIHx6weAgdHrBwCDudMHgIS5uwdAAkAAADDwhZZHHgAABAAAjgAAABwBAAA4AgAAcAQAAOAIAADAEQAAgCMAAABHAAAAjmApAGcAQPfHHwAAAHAGAADgDAAAwBkAAIAzuOimSgAAAMAZAQCAMwIAAGcEAADOaB2A6x9iAO4+IAAAAMBDDAAAHmIBwIBmPT8DIAAAEAAACAAGNOsPdAAIAAY09f0ZAAQAAAKAAQ38fAoAAoABTf14IgACgAFN/XR6+Bi6Jt+bAYAAYEBTb80L9+Np8o2pAAgABjRy/ScAMKCy6z8EgAHVXD8AAsA3NGnq+o8CYEDV1n8aAAMqtf4EAAyozvpzADCgIutPA4CB0qefD4AB5a4/HwADyp1fPgAMTB8ABqx/PAAMTB8ABqx/PAAMTB8ADEwfABLsHgAMTB8AGIweABiMHgA8TBwACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkAASABIAEgzeo30BXMaM+U4owAAAAASUVORK5CYII="
 
 # Log file under the local runtime folder (creates it if missing).
-$LogDir = Join-Path $env:USERPROFILE ".daemoncut" "setup_logs"
+# NOTE: Windows PowerShell 5.1 Join-Path accepts only ONE child path.
+$LogDir = Join-Path (Join-Path $env:USERPROFILE ".daemoncut") "setup_logs"
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 $LogFile = Join-Path $LogDir "setup_$(Get-Date -Format yyyyMMdd_HHmmss).log"
 
@@ -78,6 +79,7 @@ function Run([string]$program, [string]$argLine, [string]$stepName) {
 # ---------------------------------------------------------------------------
 # 0. Header
 # ---------------------------------------------------------------------------
+try {
 Write-Host ""
 Write-Host "===============================================================" -ForegroundColor DarkCyan
 Write-Host "  DaemonCut - automatic setup & launcher" -ForegroundColor DarkCyan
@@ -386,3 +388,10 @@ Write-Host ""
 Write-Host "  EVERYTHING IS DONE - DaemonCut is up and running." -ForegroundColor Green
 Write-Host "  Close the API/Console windows to stop the services." -ForegroundColor DarkGray
 exit 0
+} catch {
+    Write-Fail "Unexpected error: $($_.Exception.Message)"
+    Write-Fail "Line: $($_.InvocationInfo.ScriptLineNumber)"
+    Write-Host ""
+    Write-Host "Setup stopped due to an error. Full detail in log: $LogFile" -ForegroundColor Red
+    exit 1
+}
