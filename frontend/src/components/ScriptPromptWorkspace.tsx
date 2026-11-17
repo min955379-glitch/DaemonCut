@@ -144,7 +144,6 @@ export default function ScriptPromptWorkspace({ workspaceId, initialNiche, initi
     if (!draft) { onToast("Generate a script before queueing the episode.", "alert"); return; }
     if (!promptsValid) { onToast(`Every scene prompt must stay within ${MAX_YT_CREATE_CHARS} characters.`, "alert"); return; }
     if (renderFirst && !videoPath.trim()) { onToast("Choose a rendered scene clip from the Drive workspace first.", "alert"); return; }
-    if (!renderFirst && scheduledFor) { onToast("Add a rendered Drive clip before assigning a publish time.", "alert"); return; }
     setBusy(true);
     setResult("");
     try {
@@ -165,11 +164,11 @@ export default function ScriptPromptWorkspace({ workspaceId, initialNiche, initi
         title: draft.title || topic.trim(),
         hook: draft.hook || "",
         script: draft.script || "",
-        scheduled_for: renderFirst ? scheduleValue : null,
-        status: renderFirst ? (scheduleValue ? "scheduled" : "approved") : "draft",
+        scheduled_for: scheduleValue,
+        status: renderFirst ? (scheduleValue ? "scheduled" : "approved") : (scheduleValue ? "scheduled" : "draft"),
         metadata: buildEpisodeMetadata(renderedPath)
       });
-      const message = renderFirst ? `Rendered and queued ${queued.episode.title}.` : `Queued ${queued.episode.title} as a draft for media. `;
+      const message = renderFirst ? `Rendered and queued ${queued.episode.title}.` : scheduleValue ? `Queued ${queued.episode.title} as a scheduled draft. ` : `Queued ${queued.episode.title} as a draft for media. `;
       setResult(`${message} Episode ${queued.episode.episode_id.slice(0, 8)}.`);
       onToast(message);
     } catch (error) {

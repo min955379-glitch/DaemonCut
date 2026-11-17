@@ -71,7 +71,7 @@ Useful commands:
 .venv\Scripts\python.exe -m backend.config --check-runtime --check-storage
 .venv\Scripts\python.exe -m backend.database --check
 .venv\Scripts\python.exe -m backend.main
-cd frontend && npm run dev -- --hostname 0.0.0.0
+cd frontend && npm run dev
 ```
 
 ## Validation
