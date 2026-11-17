@@ -380,7 +380,10 @@ class ClipperEngine:
     def analyze_audio(self, video_path: str | Path, *, window_seconds: float = 1.0) -> list[RMSWindow]:
         """Stream FFmpeg PCM into one-second RMS windows without buffering a VOD."""
         source = Path(video_path).expanduser().resolve(strict=True)
-        duration = self.video_editor.probe_duration(source)
+        try:
+            duration = self.video_editor.probe_duration(source)
+        except VideoEditorError as exc:
+            raise ClipperDependencyUnavailable(f"Could not inspect media duration: {exc}") from exc
         if duration > config.YT_DLP_MAX_DURATION_SECONDS:
             raise ClipperValidationError("Input video exceeds the configured duration cap")
         if not math.isfinite(window_seconds) or not 0.1 <= window_seconds <= 10.0:
@@ -555,7 +558,10 @@ class ClipperEngine:
         if isinstance(max_highlights, bool) or not isinstance(max_highlights, int) or not 1 <= max_highlights <= 20 or not math.isfinite(step_seconds) or not 1 <= step_seconds <= 60:
             raise ValueError("max_highlights or step_seconds is outside the allowed range")
         source = Path(video_path).expanduser().resolve(strict=True)
-        duration = self.video_editor.probe_duration(source)
+        try:
+            duration = self.video_editor.probe_duration(source)
+        except VideoEditorError as exc:
+            raise ClipperDependencyUnavailable(f"Could not inspect media duration: {exc}") from exc
         if duration < 15:
             raise ClipperValidationError("Video must be at least 15 seconds long for highlight scoring")
         if duration > config.YT_DLP_MAX_DURATION_SECONDS:
@@ -634,7 +640,10 @@ class ClipperEngine:
             center_x=center_x,
             include_audio=True,
         )]
-        render = self.video_editor.render(clips, resolution=(1080, 1920), fps=60, lut_name=lut_name)
+        try:
+            render = self.video_editor.render(clips, resolution=(1080, 1920), fps=60, lut_name=lut_name)
+        except VideoEditorError as exc:
+            raise ClipperError(f"Video rendering failed: {exc}") from exc
         subtitles: SubtitleSidecars | None = None
         if highlight.transcript:
             subtitles = self.subtitle_engine.export_sidecars(
