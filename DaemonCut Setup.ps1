@@ -12,7 +12,8 @@
 param(
     [switch]$NoLaunch,
     [switch]$CheckOnly,
-    [switch]$NoShortcut
+    [switch]$NoShortcut,
+    [switch]$QuickStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,16 +26,17 @@ $RepoUrl       = "https://github.com/min955379-glitch/DaemonCut.git"
 $RepoDirName   = "DaemonCut"
 $SetupDir      = $PSScriptRoot
 if (-not $SetupDir) { $SetupDir = Split-Path -Parent $MyInvocation.MyCommand.Definition }
-$AppName       = "DaemonCut"
-$LauncherName  = "DaemonCut Setup.cmd"
-$ShortcutName  = "DaemonCut"
+$SetupLauncher   = "DaemonCut Setup.cmd"   # one-time full installer
+$StartLauncher   = "DaemonCut.cmd"         # lightweight "start the app" launcher
+$ShortcutName    = "DaemonCut.exe"         # desktop shortcut/icon name
 $ShortcutIcon = $null
 
 # Embedded launcher icon (256x256 ICO, base64) - written next to this script.
 $IconB64 = "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAFLUlEQVR42u3dwY1TQRBF0YoBpEmCeFiRDumQDiGwZUMA7FiM0DDY3V1VXUe6AXy538Fm7G/Hh48v0tjCQyAAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQASvT922c9FgAmrpt5hNFrMoYwek3GEKavyQzC7jVZQpi+JjMI09dkBmH9mmwgTF+TGYT1a7KBMH1NZhDWr8kGwvo12UCYviYzCOvXZANh/ZpsIKxfkw2E9WuygbB+TTYAgACwfi3t05evXQyE9WvJ4t+urIGwfm2d/hIGAKj39J9k0BKAiVh/fQNh/Tq8/lIGAFDC+h8z0AaAlVh/FwNh/WoEYLkBAJS2/gpPAmH96gVgrYFxAPwkxGOHuGn96U8Ccff6rXnVyZYCsPBk7wRgsssDoAcASwUgB4D1A3ASwKrjvgeAjTZdf+6TQFywfgOd+Qyw5OjbAzBNAAAQACMB2CUA+QCsH4AsAM/PoCsAi7zGQO4SABAA3QDY4jUG0scQ/vlXawBP7gEApRmosIfw+kcpBopMAgAlGKgzCQB02kCpSQCgcwwKTgIAnWBQdhIAaMsNxF0m0QyAeTX9UgkAAADgOgBe/6j7e6MACAAA6vXr5w8AABgNoKkBAABYBqAjAwAAWAygFwMAANgCoAsDAADYCKA+AwAA2A6gMgMAADgEoCYDAAA4CqAaAwAASABQhwEAAKQBqMAAAACSAeQyAACAEgCyGAAAQCEA5xkAAEA5ACcZAABAUQBnGAAAQGkAuw0AAEB1AFsZAABADwCbGAAAQCcAyxkAAEA/AAsZAABAVwBLGAAAQG8ATzIAAIAbADzMAAAA7gHwAAMAALgNwH8xAACAOwG8kwEAANwM4J8MAADgfgBvMAAAgCkA/soAAABmAXjFAAAAJgL4wwAAADwDAACA/wMAAIC/AgEAgPcBAADAO8EAAOCzQAAA4NOgAADgfgAAAHBHGAAAuCcYAAB8KwQAAPheIAAA8M1wAADgu0EBAMC3QwMAgN8HAAAAvxADAAB+IwwAAPxKJAAA+J1gAADwS/EAAFBr+gAAkAagzpUDAMBRANWuHAAADgGoeeUAALAdQOUrBwCAjQDqXzkAAGwB0OXKAQBgMYBeVw4AAMsAdLxyAABYA6DplQMAwOgAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAAAAAAAACAAesHAAAAAAAAAAAYsH4AAAAAAAasHwAGrB8ABqwfAAAAAIAB6wcAA9MHgIHx6weAgdHrBwCDudMHgIS5uwdAAkAAADDwhZZHHgAABAAAjgAAABwBAAA4AgAAcAQAAOAIAADAEQAAgCMAAABHAAAAjmApAGcAQPfHHwAAAHAGAADgDAAAwBkAAIAzuOimSgAAAMAZAQCAMwIAAGcEAADOaB2A6x9iAO4+IAAAAMBDDAAAHmIBwIBmPT8DIAAAEAAACAAGNOsPdAAIAAY09f0ZAAQAAAKAAQ38fAoAAoABTf14IgACgAFN/XR6+Bi6Jt+bAYAAYEBTb80L9+Np8o2pAAgABjRy/ScAMKCy6z8EgAHVXD8AAsA3NGnq+o8CYEDV1n8aAAMqtf4EAAyozvpzADCgIutPA4CB0qefD4AB5a4/HwADyp1fPgAMTB8ABqx/PAAMTB8ABqx/PAAMTB8ADEwfABLsHgAMTB8AGIweABiMHgA8TBwACQAJAAkACQAJAAkACQAJAAkACQAJAAkACQAJAAkAASABIAEgzeo30BXMaM+U4owAAAAASUVORK5CYII="
 
 # Log file under the local runtime folder (creates it if missing).
-$LogDir = Join-Path $env:USERPROFILE ".daemoncut" "setup_logs"
+# NOTE: Windows PowerShell 5.1 Join-Path accepts only ONE child path.
+$LogDir = Join-Path (Join-Path $env:USERPROFILE ".daemoncut") "setup_logs"
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 $LogFile = Join-Path $LogDir "setup_$(Get-Date -Format yyyyMMdd_HHmmss).log"
 
@@ -75,15 +77,55 @@ function Run([string]$program, [string]$argLine, [string]$stepName) {
     Write-Ok "$stepName completed."
 }
 
+function Get-CommandExe([string]$name) {
+    return Get-Command $name -ErrorAction SilentlyContinue
+}
+
+function Start-Services([string]$repoDir, [string]$venvPy, [bool]$nodePresent) {
+    Write-Step "Starting DaemonCut services..."
+    $backendProc = Start-Process -FilePath $venvPy -ArgumentList @("-m", "backend.main") -WorkingDirectory $repoDir -PassThru
+    Start-Sleep -Seconds 4
+    if ($nodePresent) {
+        $npm = (Get-CommandExe "npm").Source
+        $npmProc = Start-Process -FilePath $npm -ArgumentList @("run", "dev") -WorkingDirectory (Join-Path $repoDir "frontend") -PassThru
+        Write-Ok "Backend (PID $($backendProc.Id)) and console (PID $($npmProc.Id)) are starting."
+    } else {
+        Start-Process -FilePath "cmd.exe" -ArgumentList @("/c", "start", "DaemonCut Console", "npm", "run", "dev") -WorkingDirectory (Join-Path $repoDir "frontend")
+        Write-Ok "Backend (PID $($backendProc.Id)) is starting. Install Node.js LTS for the console."
+    }
+    Write-Host ""
+    Write-Host "  Console : http://127.0.0.1:3000" -ForegroundColor Cyan
+    Write-Host "  API docs: http://127.0.0.1:8000/docs" -ForegroundColor Cyan
+    Write-Host "  Phone   : http://127.0.0.1:8000/bridge" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  EVERYTHING IS DONE - DaemonCut is up and running." -ForegroundColor Green
+    Write-Host "  Close the API/Console windows to stop the services." -ForegroundColor DarkGray
+}
+
 # ---------------------------------------------------------------------------
 # 0. Header
 # ---------------------------------------------------------------------------
+try {
 Write-Host ""
 Write-Host "===============================================================" -ForegroundColor DarkCyan
 Write-Host "  DaemonCut - automatic setup & launcher" -ForegroundColor DarkCyan
 Write-Host "===============================================================" -ForegroundColor DarkCyan
 Add-Content -Path $LogFile -Value "DaemonCut setup started $(Get-Date -Format o)"
 Write-Host "  Log file: $LogFile" -ForegroundColor DarkGray
+
+# ---------------------------------------------------------------------------
+# QuickStart: the DaemonCut.exe shortcut just starts the already-installed app.
+# ---------------------------------------------------------------------------
+if ($QuickStart) {
+    $RepoDir = Join-Path $SetupDir $RepoDirName
+    $VenvPy = Join-Path $RepoDir ".venv\Scripts\python.exe"
+    if (-not (Test-Path $VenvPy)) {
+        Die "No DaemonCut installation found at '$RepoDir'. Run '$SetupLauncher' once to set it up first."
+    }
+    $nodeQ = Get-CommandExe "node"
+    Start-Services -repoDir $RepoDir -venvPy $VenvPy -nodePresent ([bool]$nodeQ)
+    exit 0
+}
 
 # ---------------------------------------------------------------------------
 # 1. Requirement checks
@@ -94,10 +136,6 @@ if ($PSVersionTable.PSVersion.Major -lt 5) {
     Die "PowerShell 5.1 or newer is required. This script needs Windows PowerShell."
 }
 Write-Ok "PowerShell $($PSVersionTable.PSVersion.ToString())."
-
-function Get-CommandExe([string]$name) {
-    return Get-Command $name -ErrorAction SilentlyContinue
-}
 
 $py = Get-CommandExe "py"
 if (-not $py) { $py = Get-CommandExe "python" }
@@ -228,15 +266,18 @@ Run -program $VenvPy -argLine "-m pip install -r `"$RepoDir\requirements.txt`"" 
 # ---------------------------------------------------------------------------
 # 4. Frontend dependencies
 # ---------------------------------------------------------------------------
-if ($node) {
-    $npm = (Get-CommandExe "npm").Source
+$npm = $null
+if ($node) { $npm = Get-CommandExe "npm" }
+if ($npm) {
     Write-Step "Installing console dependencies..."
-    $npmProc = Start-Process -FilePath $npm -ArgumentList @("install", "--no-audit", "--no-fund") -WorkingDirectory (Join-Path $RepoDir "frontend") -NoNewWindow -Wait -PassThru
+    $npmProc = Start-Process -FilePath $npm.Source -ArgumentList @("install", "--no-audit", "--no-fund") -WorkingDirectory (Join-Path $RepoDir "frontend") -NoNewWindow -Wait -PassThru
     if ($npmProc.ExitCode -ne 0) {
         Write-Warn "npm install failed. Run it manually in frontend\ and rerun."
     } else {
         Write-Ok "Console dependencies installed."
     }
+} else {
+    Write-Warn "npm not found. Skipping console dependency install."
 }
 
 # ---------------------------------------------------------------------------
@@ -282,8 +323,8 @@ if (-not $drivePath) {
     Write-Host ""
     Write-Host "  Enter the full path to your Google Drive 'DaemonCut Development' folder." -ForegroundColor Yellow
     Write-Host "  Example: G:\My Drive\DaemonCut Development" -ForegroundColor DarkGray
-    $input = Read-Host "DaemonCut Development folder"
-    if ($input.Trim()) { $drivePath = $input.Trim() }
+    $driveInput = Read-Host "DaemonCut Development folder"
+    if ($driveInput.Trim()) { $drivePath = $driveInput.Trim() }
 }
 if (-not $drivePath) { Die "No DaemonCut Development path was provided." }
 
@@ -327,20 +368,19 @@ if (-not $NoShortcut) {
         Write-Warn "Could not write the icon file."
     }
 
-    $lnkName = "DaemonCut.lnk"
-    $lnkDir = Join-Path $SetupDir "DaemonCut Start.lnk"
-    $lnkTarget = Join-Path $SetupDir $LauncherName
+    $lnkDir = Join-Path $SetupDir "$ShortcutName.lnk"
+    $lnkTarget = Join-Path $SetupDir $StartLauncher
     if (Test-Path $lnkTarget) {
         $ws = New-Object -ComObject WScript.Shell
         $lnk = $ws.CreateShortcut($lnkDir)
         $lnk.TargetPath = $lnkTarget
         $lnk.WorkingDirectory = $SetupDir
-        $lnk.Description = "DaemonCut - one-click setup & launch"
+        $lnk.Description = "DaemonCut - start the app"
         if ($ShortcutIcon -and (Test-Path $ShortcutIcon)) { $lnk.IconLocation = $ShortcutIcon }
         $lnk.Save()
         Write-Ok "Shortcut created: $lnkDir"
     } else {
-        Write-Warn "Launcher '$LauncherName' not found next to this script; shortcut skipped."
+        Write-Warn "Start launcher '$StartLauncher' not found next to this script; shortcut skipped."
     }
 }
 
@@ -353,36 +393,26 @@ Write-Host "  SETUP COMPLETE - everything is ready." -ForegroundColor Green
 Write-Host "===============================================================" -ForegroundColor DarkCyan
 Write-Host "  Repository : $RepoDir"
 Write-Host "  Drive path : $drivePath"
+Write-Host "  Start icon : $ShortcutName.lnk"
 Write-Host "  Icon       : $(if ($ShortcutIcon) { $ShortcutIcon } else { '(skipped)' })"
 Write-Host "  Log        : $LogFile"
 Write-Host ""
 
 if ($NoLaunch) {
     Write-Host "  Started with -NoLaunch: services were not started." -ForegroundColor Yellow
-    Write-Host "  Double-click 'DaemonCut Start.lnk' (or run $LauncherName) to launch." -ForegroundColor Cyan
+    Write-Host "  Double-click '$ShortcutName.lnk' (or run $StartLauncher) to launch." -ForegroundColor Cyan
     exit 0
 }
 
 # ---------------------------------------------------------------------------
 # 9. Launch the services (backend + console)
 # ---------------------------------------------------------------------------
-Write-Step "Starting DaemonCut services..."
-$backendProc = Start-Process -FilePath $VenvPy -ArgumentList @("-m", "backend.main") -WorkingDirectory $RepoDir -PassThru
-Start-Sleep -Seconds 4
-if ($node) {
-    $npm = (Get-CommandExe "npm").Source
-    $npmProc = Start-Process -FilePath $npm -ArgumentList @("run", "dev") -WorkingDirectory (Join-Path $RepoDir "frontend") -PassThru
-    Write-Ok "Backend (PID $($backendProc.Id)) and console (PID $($npmProc.Id)) are starting."
-} else {
-    $frontProc = Start-Process -FilePath "cmd.exe" -ArgumentList @("/c", "start", "DaemonCut Console", "npm", "run", "dev") -WorkingDirectory (Join-Path $RepoDir "frontend") -PassThru
-    Write-Ok "Backend (PID $($backendProc.Id)) is starting. Install Node.js LTS for the console."
-}
-
-Write-Host ""
-Write-Host "  Console : http://127.0.0.1:3000" -ForegroundColor Cyan
-Write-Host "  API docs: http://127.0.0.1:8000/docs" -ForegroundColor Cyan
-Write-Host "  Phone   : http://127.0.0.1:8000/bridge" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "  EVERYTHING IS DONE - DaemonCut is up and running." -ForegroundColor Green
-Write-Host "  Close the API/Console windows to stop the services." -ForegroundColor DarkGray
+Start-Services -repoDir $RepoDir -venvPy $VenvPy -nodePresent ([bool]$node)
 exit 0
+} catch {
+    Write-Fail "Unexpected error: $($_.Exception.Message)"
+    Write-Fail "Line: $($_.InvocationInfo.ScriptLineNumber)"
+    Write-Host ""
+    Write-Host "Setup stopped due to an error. Full detail in log: $LogFile" -ForegroundColor Red
+    exit 1
+}
